@@ -44,7 +44,7 @@ app.get("/info", (request, response) => {
 app.get("/api/persons", (request, response) => {
     response.json(persons);
 });
-
+//3.3
 app.get("/api/persons/:id", (request, response) => {
     const id = Number(request.params.id);
     const person = persons.find((person) => person.id === id);
@@ -55,12 +55,28 @@ app.get("/api/persons/:id", (request, response) => {
 
     response.json(person);
 });
-
+//3.4
 app.delete("/api/persons/:id", (request, response) => {
     const id = Number(request.params.id);
     persons = persons.filter((person) => person.id !== id);
-    response.sendStatus(202)
+    response.sendStatus(202);
 });
+//3.5
+app.post("/api/persons", (request, response) => {
+    const body = request.body;
+
+    const newPerson = {
+        id: generateId(),
+        ...body,
+    };
+
+    persons = persons.concat(newPerson);
+    response.redirect("/api/persons");
+});
+
+const generateId = () => {
+    return Math.round(Math.random() * 1000 + 1);
+};
 
 app.listen(PORT, () => {
     console.log(`Server starting in PORT ${PORT}`);
