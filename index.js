@@ -29,7 +29,16 @@ let persons = [
 app.use(express.json());
 
 app.get("/", (request, response) => {
-    response.send("Helllo World");
+    response.send("<h1> Phone Book </h1>");
+});
+
+app.get("/info", (request, response) => {
+    const totalPersons = persons.length;
+
+    response.send(`
+        <p>Phone book has info for ${totalPersons} people</p>
+        <p>${Date()}</p>
+        `);
 });
 
 app.get("/api/persons", (request, response) => {
