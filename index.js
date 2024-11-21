@@ -64,14 +64,29 @@ app.delete("/api/persons/:id", (request, response) => {
 //3.5
 app.post("/api/persons", (request, response) => {
     const body = request.body;
+    const name = body.name;
+    const number = body.number;
+    if (name !== "" && number !== "") {
+        const findName = persons.filter((person) => person.name === name);
 
-    const newPerson = {
-        id: generateId(),
-        ...body,
-    };
-
-    persons = persons.concat(newPerson);
-    response.redirect("/api/persons");
+        console.log(findName, "findname", findName == "");
+        if (findName != "") {
+            response
+                .status(409)
+                .json({ error: "the name must be unique" })
+                .end();
+        } else {
+            const newPerson = {
+                id: generateId(),
+                ...body,
+            };
+            persons = persons.concat(newPerson);
+            response.status(201).end();
+        }
+    } else {
+        console.log("no content");
+        response.sendStatus(204);
+    }
 });
 
 const generateId = () => {
