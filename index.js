@@ -27,7 +27,29 @@ let persons = [
 ];
 
 app.use(express.json());
-app.use(morgan("tiny"));
+
+morgan.token("body", (request) => JSON.stringify(request.body));
+
+app.use(
+    morgan(
+        ":method :url :status :res[content-length] - :response-time ms :body"
+    )
+);
+
+// app.use(
+//     morgan((tokens, req, res) => {
+//         return [
+//             tokens.method(req, res),
+//             tokens.url(req, res),
+//             tokens.status(req, res),
+//             tokens.res(req, res, "content-length"),
+//             "-",
+//             tokens["response-time"](req, res),
+//             "ms",
+//             JSON.stringify(req.body),
+//         ].join(" ");
+//     })
+// );
 
 app.get("/", (request, response) => {
     response.send("<h1> Phone Book </h1>");
@@ -70,7 +92,6 @@ app.post("/api/persons", (request, response) => {
     if (name !== "" && number !== "") {
         const findName = persons.filter((person) => person.name === name);
 
-        console.log(findName, "findname", findName == "");
         if (findName != "") {
             response
                 .status(409)
