@@ -26,6 +26,8 @@ let persons = [
     },
 ];
 
+app.use(express.static("dist"));
+
 app.use(express.json());
 
 morgan.token("body", (request) => JSON.stringify(request.body));
@@ -103,7 +105,7 @@ app.post("/api/persons", (request, response) => {
                 ...body,
             };
             persons = persons.concat(newPerson);
-            response.status(201).end();
+            response.json(newPerson).status(201).end();
         }
     } else {
         console.log("no content");
@@ -114,6 +116,19 @@ app.post("/api/persons", (request, response) => {
 const generateId = () => {
     return Math.round(Math.random() * 1000 + 1);
 };
+
+app.put("/api/persons/:id", (request, response) => {
+    const body = request.body;
+    const newNumber = body.number;
+    const personId = body.id;
+
+    if (newNumber !== "") {
+        persons = persons.map((person) =>
+            person.id === personId ? { ...person, number: newNumber } : person
+        );
+    }
+    response.sendStatus(200);
+});
 
 app.listen(PORT, () => {
     console.log(`Server starting in PORT ${PORT}`);
