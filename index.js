@@ -120,7 +120,7 @@ app.put("/api/persons/:id", (request, response) => {
     const body = request.body;
     const newNumber = body.number;
     const personId = body.id;
-
+    debugger;
     if (newNumber !== "") {
         persons = persons.map((person) =>
             person.id === personId ? { ...person, number: newNumber } : person
