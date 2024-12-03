@@ -11,7 +11,7 @@ const password = process.argv[2];
 const url = `mongodb+srv://facund097dv:${password}@cluster0.imugh.mongodb.net/${DATA_BASE_NAME}?
 retryWrites=true&w=majority&appName=Cluster0`;
 
-// aca falta setear stricquery
+// aca falta setear strictquery
 mongoose.connect(url);
 
 // Schema

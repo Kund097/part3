@@ -1,3 +1,4 @@
 /node_modules
-
+.env
 part3_backend&front.code-workspace
+mongo.js
