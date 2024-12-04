@@ -26,8 +26,8 @@ app.get("/", (request, response) => {
     response.send("<h1> Phone Book </h1>");
 });
 
-app.get("/info", (request, response) => {
-    const totalPersons = persons.length;
+app.get("/info", async (request, response) => {
+    const totalPersons = (await Person.find({})).length;
 
     response.send(`
         <p>Phone book has info for ${totalPersons} people</p>
@@ -35,23 +35,48 @@ app.get("/info", (request, response) => {
         `);
 });
 
-//3.3
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
     const id = request.params.id;
     Person.findById(id)
-        .then((person) => response.json(person))
-        .catch((error) => {
-            console.log("error findByID", error);
-            response.sendStatus(404);
-        });
+        .then((person) => {
+            if (person) {
+                // si person es null, entonces null == falsy Y responde con el estado 404
+                response.json(person);
+            } else {
+                response.sendStatus(404);
+            }
+        })
+        .catch((error) => next(error));
 });
-//3.4
-app.delete("/api/persons/:id", (request, response) => {
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message);
+
+    if (error.name === "CastError") {
+        return response.status(400).send({ error: "malformatted" });
+    }
+
+    next(error);
+};
+
+const unknownEndPoint = (request, response) => {
+    response.status(404).send({ error: "unknownEndPoint" });
+};
+
+app.delete("/api/persons/:id", (request, response, next) => {
     const id = request.params.id;
-    Person.findOneAndDelete(id);
-    response.sendStatus(202);
+    Person.findByIdAndDelete(id)
+        .then((result) => {
+            console.error("result delete", result);
+            if (result) {
+                response.status(204).end();
+            } else {
+                response.status(404).end();
+            }
+        })
+        .catch((error) => next(error));
 });
-//3.5
+
 async function getAll() {
     return await Person.find({});
 }
@@ -63,7 +88,6 @@ app.post("/api/persons", async (request, response) => {
 
     if (name !== "" && number !== "") {
         const persons = await getAll();
-        console.log(persons);
         const findName = persons.filter((person) => person.name === name);
 
         if (findName != "") {
@@ -85,10 +109,6 @@ app.post("/api/persons", async (request, response) => {
     }
 });
 
-const generateId = () => {
-    return Math.round(Math.random() * 1000 + 1);
-};
-
 app.put("/api/persons/:id", (request, response) => {
     const body = request.body;
     const newNumber = body.number;
@@ -99,11 +119,10 @@ app.put("/api/persons/:id", (request, response) => {
             { number: newNumber },
             { new: true }
         ).then((result) => response.json(result));
-        // persons = persons.map((person) =>
-        //     person.id === personId ? { ...person, number: newNumber } : person
-        // );
     }
 });
+app.use(unknownEndPoint);
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
