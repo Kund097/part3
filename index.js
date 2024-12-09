@@ -86,7 +86,6 @@ async function getAll() {
 app.post("/api/persons", async (request, response, next) => {
     const body = request.body;
     const name = body.name;
-    const number = body.number;
 
     // if (name !== "" && number !== "") {
     const persons = await getAll();
@@ -105,13 +104,9 @@ app.post("/api/persons", async (request, response, next) => {
             })
             .catch((error) => next(error));
     }
-    // } else {
-    //     console.log("no content");
-    //     response.sendStatus(204);
-    // }
 });
 
-app.put("/api/persons/:id", (request, response) => {
+app.put("/api/persons/:id", (request, response, next) => {
     const body = request.body;
     const newNumber = body.number;
     const personId = body.id;
@@ -120,7 +115,9 @@ app.put("/api/persons/:id", (request, response) => {
             personId,
             { number: newNumber },
             { new: true, runValidators: true, context: "query" }
-        ).then((result) => response.json(result));
+        )
+            .then((result) => response.json(result))
+            .catch((error) => next(error));
     }
 });
 app.use(unknownEndPoint);
