@@ -90,8 +90,8 @@ app.post("/api/persons", async (request, response, next) => {
     // if (name !== "" && number !== "") {
     const persons = await getAll();
     const findName = persons.filter((person) => person.name === name);
-
-    if (findName != "") {
+// aca tenia un !=
+    if (findName) {
         response.status(409).json({ error: "the name must be unique" }).end();
     } else {
         const newPerson = new Person({
