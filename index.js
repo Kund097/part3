@@ -54,6 +54,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === "CastError") {
         return response.status(400).send({ error: "malformatted" });
+    } else if (error.name === "ValidationError") {
+        return response.status(400).send({ error: error.message });
     }
 
     next(error);
@@ -81,32 +83,32 @@ async function getAll() {
     return await Person.find({});
 }
 
-app.post("/api/persons", async (request, response) => {
+app.post("/api/persons", async (request, response, next) => {
     const body = request.body;
     const name = body.name;
     const number = body.number;
 
-    if (name !== "" && number !== "") {
-        const persons = await getAll();
-        const findName = persons.filter((person) => person.name === name);
+    // if (name !== "" && number !== "") {
+    const persons = await getAll();
+    const findName = persons.filter((person) => person.name === name);
 
-        if (findName != "") {
-            response
-                .status(409)
-                .json({ error: "the name must be unique" })
-                .end();
-        } else {
-            const newPerson = new Person({
-                ...body,
-            });
-            newPerson.save().then((result) => {
-                response.json(result).status(201).end();
-            });
-        }
+    if (findName != "") {
+        response.status(409).json({ error: "the name must be unique" }).end();
     } else {
-        console.log("no content");
-        response.sendStatus(204);
+        const newPerson = new Person({
+            ...body,
+        });
+        newPerson
+            .save()
+            .then((result) => {
+                response.json(result).status(201).end();
+            })
+            .catch((error) => next(error));
     }
+    // } else {
+    //     console.log("no content");
+    //     response.sendStatus(204);
+    // }
 });
 
 app.put("/api/persons/:id", (request, response) => {
@@ -117,7 +119,7 @@ app.put("/api/persons/:id", (request, response) => {
         Person.findByIdAndUpdate(
             personId,
             { number: newNumber },
-            { new: true }
+            { new: true, runValidators: true, context: "query" }
         ).then((result) => response.json(result));
     }
 });

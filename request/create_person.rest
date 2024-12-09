@@ -5,3 +5,13 @@ Content-Type: application/json
     "name":"Facundo David",
     "number":"5648451568"
 }
+
+###
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name":"Fac",
+    "number":"343243"
+}
+ 
